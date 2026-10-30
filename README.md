@@ -1,5 +1,7 @@
 # 9Router GNOME Shell extension
 
+![9Router indicator](screenshot.png)
+
 A GNOME Shell top-bar indicator to start, stop and restart the
 [9Router](https://www.npmjs.com/package/9router) AI gateway, similar to the
 WireGuard tunnel indicator.
