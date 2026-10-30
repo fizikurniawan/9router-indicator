@@ -48,10 +48,11 @@ function portOpen(port, callback) {
 
 const NineRouterIndicator = GObject.registerClass(
 class NineRouterIndicator extends PanelMenu.Button {
-    _init(settings) {
+    _init(settings, extension) {
         super._init(0.0, '9Router', false);
 
         this._settings = settings;
+        this._extension = extension;
         this._running = false;
         this._pollId = 0;
         this._settingsId = 0;
@@ -99,6 +100,13 @@ class NineRouterIndicator extends PanelMenu.Button {
             Gio.AppInfo.launch_default_for_uri(`http://127.0.0.1:${this._port()}`, null);
         });
         this.menu.addMenuItem(this._openItem);
+
+        this._prefsItem = new PopupMenu.PopupMenuItem('Preferences…');
+        this._prefsItem.connect('activate', () => {
+            if (this._extension)
+                this._extension.openPreferences();
+        });
+        this.menu.addMenuItem(this._prefsItem);
 
         this._settingsId = this._settings.connect('changed', () => this._restartPolling());
 
@@ -174,7 +182,7 @@ class NineRouterIndicator extends PanelMenu.Button {
 export default class NineRouterExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
-        this._indicator = new NineRouterIndicator(this._settings);
+        this._indicator = new NineRouterIndicator(this._settings, this);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
     }
 
