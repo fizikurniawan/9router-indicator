@@ -61,7 +61,10 @@ After re-login you should see the **9R** dot in the top bar.
 ├── extension/
 │   ├── metadata.json      # extension manifest (uuid 9router@local)
 │   ├── extension.js       # PanelMenu indicator
-│   └── stylesheet.css     # status dot styles
+│   ├── prefs.js           # preferences window (port/unit/poll)
+│   ├── stylesheet.css     # status dot styles
+│   └── schemas/
+│       └── org.gnome.shell.extensions.9router.gschema.xml
 ├── systemd/
 │   └── 9router.service    # user unit running the gateway
 ├── bin/
@@ -73,12 +76,35 @@ After re-login you should see the **9R** dot in the top bar.
 
 ## Configuration
 
-- **Port**: the extension assumes `20128` (9Router default). Edit
-  `DEFAULT_PORT` in `extension/extension.js` and the port in
-  `systemd/9router.service` if you changed it.
-- **Unit name**: `9router.service` (see `UNIT` in `extension.js`).
-- **CLI path**: the unit's `ExecStart` assumes `/usr/local/bin/9router`. Adjust
-  it if `command -v 9router` points elsewhere.
+Settings live in GSettings under the schema
+`org.gnome.shell.extensions.9router`. Open the preferences with:
+
+```bash
+gnome-extensions prefs 9router@local
+```
+
+or via GNOME Settings -> Extensions -> 9Router -> gear icon.
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `port` | int (1-65535) | `20128` | Port the gateway listens on; used for the status check and the dashboard URL |
+| `unit` | string | `9router.service` | systemd --user unit the menu actions drive |
+| `poll-interval` | int (1-60) | `3` | Seconds between status checks |
+
+You can also set them from the CLI, e.g.:
+
+```bash
+gsettings set org.gnome.shell.extensions.9router port 20128
+gsettings set org.gnome.shell.extensions.9router unit 9router.service
+```
+
+Changes are picked up immediately (the indicator re-polls and reschedules on
+`changed`).
+
+**If you change the port**, also update `ExecStart` in
+`systemd/9router.service` so the gateway actually listens there. The unit's
+`ExecStart` assumes `/usr/local/bin/9router`; adjust it if
+`command -v 9router` points elsewhere.
 
 ## Troubleshooting
 
