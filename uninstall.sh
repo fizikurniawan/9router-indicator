@@ -2,7 +2,7 @@
 # Remove the 9Router GNOME Shell extension, unit and control script.
 set -euo pipefail
 
-EXT_UUID="9router@local"
+EXT_UUID="9router@indicator"
 EXT_DIR="${HOME}/.local/share/gnome-shell/extensions/${EXT_UUID}"
 
 systemctl --user disable --now 9router.service 2>/dev/null || true

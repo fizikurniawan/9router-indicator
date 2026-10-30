@@ -1,5 +1,5 @@
 {
-  "uuid": "9router@local",
+  "uuid": "9router@indicator",
   "name": "9Router",
   "description": "Start, stop and restart the 9Router gateway from the top bar. Shows a status dot and opens the dashboard.",
   "version": 2,

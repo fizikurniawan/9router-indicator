@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXT_UUID="9router@local"
+EXT_UUID="9router@indicator"
 EXT_DIR="${HOME}/.local/share/gnome-shell/extensions/${EXT_UUID}"
 UNIT_DIR="${HOME}/.config/systemd/user"
 BIN_DIR="${HOME}/.local/bin"

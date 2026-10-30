@@ -59,7 +59,7 @@ After re-login you should see the **9R** dot in the top bar.
 ```
 9router-indicator/
 ├── extension/
-│   ├── metadata.json      # extension manifest (uuid 9router@local)
+│   ├── metadata.json      # extension manifest (uuid 9router@indicator)
 │   ├── extension.js       # PanelMenu indicator
 │   ├── prefs.js           # preferences window (port/unit/poll)
 │   ├── stylesheet.css     # status dot styles
@@ -80,7 +80,7 @@ Settings live in GSettings under the schema
 `org.gnome.shell.extensions.9router`. Open the preferences with:
 
 ```bash
-gnome-extensions prefs 9router@local
+gnome-extensions prefs 9router@indicator
 ```
 
 or via GNOME Settings -> Extensions -> 9Router -> gear icon.
@@ -111,7 +111,7 @@ Changes are picked up immediately (the indicator re-polls and reschedules on
 Check whether the extension is loaded:
 
 ```bash
-gnome-extensions info 9router@local
+gnome-extensions info 9router@indicator
 gnome-extensions list --enabled | grep 9router
 ```
 
@@ -129,7 +129,7 @@ journalctl --user -u 9router.service -n 50 --no-pager
 ```
 
 If the indicator never appears, confirm the extension directory name matches
-the uuid (`9router@local`) and that no duplicate copy with the same uuid
+the uuid (`9router@indicator`) and that no duplicate copy with the same uuid
 exists under `~/.local/share/gnome-shell/extensions/`.
 
 ## Uninstall
