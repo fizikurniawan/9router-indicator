@@ -59,7 +59,7 @@ class NineRouterIndicator extends PanelMenu.Button {
         const box = new St.BoxLayout({ style_class: 'panel-status-indicators-box' });
         this._dot = new St.Widget({ style_class: 'nine-dot', y_align: Clutter.ActorAlign.CENTER });
         this._label = new St.Label({
-            text: '9R',
+            text: `9R:${this._port()}`,
             y_align: Clutter.ActorAlign.CENTER,
             style_class: 'nine-label',
         });
@@ -67,7 +67,7 @@ class NineRouterIndicator extends PanelMenu.Button {
         box.add_child(this._label);
         this.add_child(box);
 
-        this._statusItem = new PopupMenu.PopupMenuItem('', { reactive: false });
+        this._statusItem = new PopupMenu.PopupMenuItem('Checking…', { reactive: false });
         this.menu.addMenuItem(this._statusItem);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -152,7 +152,8 @@ class NineRouterIndicator extends PanelMenu.Button {
     _setRunning(up) {
         this._running = up;
         const url = `http://127.0.0.1:${this._port()}`;
-        this._statusItem.label.text = up ? `● Running — ${url}` : '○ Stopped';
+        this._statusItem.label.text = up ? `● Running — ${url}` : `○ Stopped — ${url}`;
+        this._label.text = `9R:${this._port()}`;
         this._dot.style_class = up ? 'nine-dot nine-dot-on' : 'nine-dot nine-dot-off';
 
         this._startItem.setSensitive(!up);
