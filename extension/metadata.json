@@ -2,6 +2,7 @@
   "uuid": "9router@local",
   "name": "9Router",
   "description": "Start, stop and restart the 9Router gateway from the top bar. Shows a status dot and opens the dashboard.",
-  "version": 1,
-  "shell-version": ["45", "46", "47", "48", "49", "50"]
+  "version": 2,
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.9router"
 }

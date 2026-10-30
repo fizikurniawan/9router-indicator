@@ -2,3 +2,4 @@
 *.bak
 .DS_Store
 node_modules/
+extension/schemas/gschemas.compiled

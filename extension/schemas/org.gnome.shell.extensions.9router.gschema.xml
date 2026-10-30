@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.9router" path="/org/gnome/shell/extensions/9router/">
+    <key name="port" type="i">
+      <default>20128</default>
+      <range min="1" max="65535"/>
+      <summary>Gateway port</summary>
+      <description>TCP port the 9Router gateway listens on.</description>
+    </key>
+    <key name="unit" type="s">
+      <default>'9router.service'</default>
+      <summary>systemd user unit</summary>
+      <description>Name of the systemd --user unit that runs the 9Router gateway.</description>
+    </key>
+    <key name="poll-interval" type="i">
+      <default>3</default>
+      <range min="1" max="60"/>
+      <summary>Status poll interval</summary>
+      <description>Seconds between gateway status checks.</description>
+    </key>
+  </schema>
+</schemalist>
