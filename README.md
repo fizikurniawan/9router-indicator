@@ -32,8 +32,8 @@ gateway survives independently of the shell or any launcher window.
 ## Install
 
 ```bash
-git clone <this-repo> ~/Work/9router-gnome
-cd ~/Work/9router-gnome
+git clone <this-repo> ~/Work/9router-indicator
+cd ~/Work/9router-indicator
 ./install.sh
 ```
 
@@ -57,7 +57,7 @@ After re-login you should see the **9R** dot in the top bar.
 ## Layout
 
 ```
-9router-gnome/
+9router-indicator/
 ├── extension/
 │   ├── metadata.json      # extension manifest (uuid 9router@local)
 │   ├── extension.js       # PanelMenu indicator
@@ -135,7 +135,7 @@ exists under `~/.local/share/gnome-shell/extensions/`.
 ## Uninstall
 
 ```bash
-cd ~/Work/9router-gnome
+cd ~/Work/9router-indicator
 ./uninstall.sh
 ```
 
