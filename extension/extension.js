@@ -1,0 +1,151 @@
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Clutter from 'gi://Clutter';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+
+const UNIT = '9router.service';
+const DEFAULT_PORT = 20128;
+
+function systemctl(args) {
+    try {
+        const proc = Gio.Subprocess.new(
+            ['systemctl', '--user', ...args],
+            Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE
+        );
+        proc.wait_async(null, () => {});
+    } catch (e) {
+        logError(e, '9router: systemctl ' + args.join(' '));
+    }
+}
+
+function portOpen(port, callback) {
+    const client = new Gio.SocketClient();
+    const addr = new Gio.InetSocketAddress({
+        address: Gio.InetAddress.new_from_string('127.0.0.1'),
+        port,
+    });
+    client.connect_async(addr, null, (src, res) => {
+        let conn = null;
+        try {
+            conn = src.connect_finish(res);
+        } catch (e) {
+            conn = null;
+        }
+        if (conn) {
+            try { conn.close(null); } catch (e) {}
+        }
+        callback(!!conn);
+    });
+}
+
+const NineRouterIndicator = GObject.registerClass(
+class NineRouterIndicator extends PanelMenu.Button {
+    _init(port) {
+        super._init(0.0, '9Router', false);
+
+        this._port = port;
+        this._running = false;
+        this._pollId = 0;
+
+        const box = new St.BoxLayout({ style_class: 'panel-status-indicators-box' });
+        this._dot = new St.Widget({ style_class: 'nine-dot', y_align: Clutter.ActorAlign.CENTER });
+        this._label = new St.Label({
+            text: '9R',
+            y_align: Clutter.ActorAlign.CENTER,
+            style_class: 'nine-label',
+        });
+        box.add_child(this._dot);
+        box.add_child(this._label);
+        this.add_child(box);
+
+        this._statusItem = new PopupMenu.PopupMenuItem('', { reactive: false });
+        this.menu.addMenuItem(this._statusItem);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        this._startItem = new PopupMenu.PopupMenuItem('Start');
+        this._startItem.connect('activate', () => {
+            systemctl(['start', UNIT]);
+            this._scheduleRefresh(1500);
+        });
+        this.menu.addMenuItem(this._startItem);
+
+        this._stopItem = new PopupMenu.PopupMenuItem('Stop');
+        this._stopItem.connect('activate', () => {
+            systemctl(['stop', UNIT]);
+            this._scheduleRefresh(1000);
+        });
+        this.menu.addMenuItem(this._stopItem);
+
+        this._restartItem = new PopupMenu.PopupMenuItem('Restart');
+        this._restartItem.connect('activate', () => {
+            systemctl(['restart', UNIT]);
+            this._scheduleRefresh(2500);
+        });
+        this.menu.addMenuItem(this._restartItem);
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        this._openItem = new PopupMenu.PopupMenuItem('Open Dashboard');
+        this._openItem.connect('activate', () => {
+            Gio.AppInfo.launch_default_for_uri(`http://127.0.0.1:${this._port}`, null);
+        });
+        this.menu.addMenuItem(this._openItem);
+
+        this._refresh();
+        this._pollId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 3, () => {
+            this._refresh();
+            return GLib.SOURCE_CONTINUE;
+        });
+    }
+
+    _scheduleRefresh(delayMs) {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, delayMs, () => {
+            this._refresh();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _refresh() {
+        portOpen(this._port, up => this._setRunning(up));
+    }
+
+    _setRunning(up) {
+        this._running = up;
+        const url = `http://127.0.0.1:${this._port}`;
+        this._statusItem.label.text = up ? `● Running — ${url}` : '○ Stopped';
+        this._dot.style_class = up ? 'nine-dot nine-dot-on' : 'nine-dot nine-dot-off';
+
+        this._startItem.setSensitive(!up);
+        this._stopItem.setSensitive(up);
+        this._restartItem.setSensitive(up);
+    }
+
+    destroy() {
+        if (this._pollId) {
+            GLib.source_remove(this._pollId);
+            this._pollId = 0;
+        }
+        super.destroy();
+    }
+});
+
+export default class NineRouterExtension extends Extension {
+    enable() {
+        const port = DEFAULT_PORT;
+        this._indicator = new NineRouterIndicator(port);
+        Main.panel.addToStatusArea(this.uuid, this._indicator);
+    }
+
+    disable() {
+        if (this._indicator) {
+            this._indicator.destroy();
+            this._indicator = null;
+        }
+    }
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=9Router AI API Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/9router --skip-update --no-browser --port 20128
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

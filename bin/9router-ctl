@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# 9Router control helper: status | start | stop | restart | toggle | open
+# Drives the user-level 9router.service systemd unit.
+set -u
+
+PORT="${NINE_ROUTER_PORT:-20128}"
+URL="http://127.0.0.1:${PORT}"
+UNIT="${NINE_ROUTER_UNIT:-9router.service}"
+
+notify() {
+  command -v notify-send >/dev/null 2>&1 && notify-send -a 9router -i 9router "$1" "${2:-}" 2>/dev/null || true
+}
+
+is_up() {
+  timeout 1 bash -c "</dev/tcp/127.0.0.1/${PORT}" 2>/dev/null
+}
+
+wait_up() {
+  for _ in $(seq 1 150); do
+    is_up && return 0
+    sleep 0.2
+  done
+  return 1
+}
+
+case "${1:-status}" in
+  status)
+    if is_up; then echo "running  (${URL})"; else echo "stopped"; fi
+    ;;
+  start)
+    if is_up; then echo "already running (${URL})"; exit 0; fi
+    systemctl --user start "${UNIT}" >/dev/null 2>&1 || true
+    if wait_up; then notify "9Router" "Gateway running at ${URL}"; echo "started (${URL})"; exit 0; fi
+    notify "9Router" "Failed to start"
+    echo "failed to start" >&2; exit 1
+    ;;
+  stop)
+    systemctl --user stop "${UNIT}" >/dev/null 2>&1 || true
+    notify "9Router" "Gateway stopped"
+    echo "stopped"
+    ;;
+  restart)
+    systemctl --user restart "${UNIT}" >/dev/null 2>&1 || true
+    if wait_up; then notify "9Router" "Gateway restarted"; echo "restarted (${URL})"; exit 0; fi
+    echo "restart failed" >&2; exit 1
+    ;;
+  toggle)
+    if is_up; then exec "$0" stop; else exec "$0" start; fi
+    ;;
+  open)
+    is_up || "$0" start || exit 1
+    xdg-open "${URL}" >/dev/null 2>&1 &
+    ;;
+  *)
+    echo "usage: 9router-ctl {status|start|stop|restart|toggle|open}" >&2
+    exit 2
+    ;;
+esac
